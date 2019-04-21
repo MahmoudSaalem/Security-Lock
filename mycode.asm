@@ -7,7 +7,7 @@ org 100h
 .data
     id_table    dw  0123h,  4567h,  89abh,  0cdefh, 1234h,  5678h,  9abch,  0def0h, 2345h,  6789h,  0abcdh, 0ef01h, 3456h,  789ah,  0bcdeh, 0f012h, 4567h,  89abh,  0cdefh, 0122h
     pw_table    db  00h,    01h,    02h,    03h,    04h,    05h,    06h,    07h,    08h,     09h,   0ah,    0bh,    0ch,    0dh,    0eh,    0fh,    00h,    01h,    02h,    03h
-    welcomemsg  db  "Welcome to Security Lock.",10,13,"$"
+    welcomemsg  db  "Security Lock.",10,13,"$"
     successmsg  dw  10,13,"Access allowed!  :)",10,13,"$"
     failmsg     dw  10,13,"Access denied!  :(",10,13,"$"
     msgid       db  10,13,"Enter ID (4 hexa digits)",10,13,">> $"
@@ -22,10 +22,11 @@ org 100h
     mov     ax,@data
     mov     ds,ax
 
-    mov     dx,offset welcomemsg
-    mov     ah,9h
-    int     21h
-
+    mov     ax,offset welcomemsg   ;msg to be printed
+    mov     si,ax
+    mov     bl, 0ah                ;color of the msg
+    call    print
+    
     call    get_id
     call    get_pw
     call    login
@@ -35,7 +36,31 @@ org 100h
     int     16h
 
     ret
-
+    
+    print     proc    near
+        mov     dl, 0   ; current column.
+        mov     dh, 0   ; current row.
+            
+        x:
+        mov     ah, 02h
+        int     10h
+        cmp     [si],'$'
+        je      exit  
+        mov     al,[si]
+        inc     si
+        mov     bh,0
+        mov     cx,1
+        inc     dl
+        
+        mov     ah,09h 
+        int     10h
+       
+        jmp     x
+                
+        exit: 
+        ret
+    endp
+    
     login   proc    near
         ; set forward direction:
         cld
